@@ -6,12 +6,13 @@ import ToolCard from '@/components/tools/ToolCard';
 import SafeImage from '@/components/shared/SafeImage';
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props) {
   try {
-    const tool = await getTool(params.slug);
+    const { slug } = await params;
+    const tool = await getTool(slug);
     return { title: `${tool.name} — Vedix Tools`, description: tool.description };
   } catch {
     return { title: 'Tool — Vedix' };
@@ -33,7 +34,8 @@ const LEVEL_LABEL = {
 export default async function ToolDetailPage({ params }: Props) {
   let tool;
   try {
-    tool = await getTool(params.slug);
+    const { slug } = await params;
+    tool = await getTool(slug);
   } catch {
     notFound();
   }

@@ -1,93 +1,112 @@
-import { getNewsItem } from '@/lib/api';
 import { notFound } from 'next/navigation';
+import { getNewsItem } from '@/lib/api';
 import CategoryTag from '@/components/shared/CategoryTag';
-import Link from 'next/link';
-import { Clock, ArrowRight } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { Metadata } from 'next';
-import SafeImage from '@/components/shared/SafeImage';
+import { format } from 'date-fns';
+import { type NewsUseCases } from '@/lib/types';
+import ViewTracker from '@/components/news/ViewTracker';
+import DiscussButton from '@/components/news/DiscussButton';
 
-interface Props {
-  params: { slug: string };
+function formatDate(isoString: string) {
+  return format(new Date(isoString), 'MMM d, yyyy');
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  try {
-    const news = await getNewsItem(params.slug);
-    return { title: `${news.title} — Vedix`, description: news.summary };
-  } catch {
-    return { title: 'News — Vedix' };
-  }
-}
-
-export default async function NewsDetailPage({ params }: Props) {
+export default async function NewsDetailPage(props: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await props.params;
   let news;
   try {
-    news = await getNewsItem(params.slug);
+    news = await getNewsItem(slug);
   } catch {
     notFound();
   }
-
-  const timeAgo = formatDistanceToNow(new Date(news.publishedAt), { addSuffix: true });
+  
+  if (!news) notFound();
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-20">
-      
-      {/* Category & Meta */}
-      <div className="flex items-center gap-3 text-[#5A5E7A] text-[13px] mt-3">
-        <CategoryTag category={news.category} />
-        <span>·</span>
-        <span className="flex items-center gap-1.5"><Clock size={14} /> {news.readTime} min read</span>
-        <span>·</span>
-        <span>{timeAgo}</span>
+    <main className="max-w-4xl mx-auto px-6 py-20">
+      <ViewTracker slug={slug} />
+
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <CategoryTag category={news.category} />
+          <span className="text-[#5A5E7A] text-[13px]">{news.source}</span>
+          <span className="text-[#5A5E7A] text-[13px]">{formatDate(news.publishedAt)}</span>
+          <span className="text-[#5A5E7A] text-[13px]">{news.readTime} min</span>
+          <span className="text-[#5A5E7A] text-[13px]">👁 {news.viewCount || 0} views</span>
+        </div>
+        <h1 className="text-[48px] font-bold tracking-[-1px] text-white leading-[1.2]">
+          {news.title}
+        </h1>
       </div>
 
-      {/* Title */}
-      <h1 className="text-[48px] font-bold tracking-[-1px] text-white mt-4 leading-[1.2]">
-        {news.title}
-      </h1>
+      {/* What happened */}
+      <div className="bg-[#13162A] border border-[#2A2D4A] rounded-xl p-6 mt-8">
+        <p className="text-[#85B7EB] text-[11px] uppercase font-medium mb-3">📰 What happened</p>
+        <p className="text-white text-[16px] leading-[1.7]">{news.summary}</p>
+      </div>
 
-      {/* Hero image */}
-      {news.imageUrl && (
-        <div className="w-full h-80 rounded-[12px] overflow-hidden mt-8 bg-[#1A1D35]">
-          <SafeImage src={news.imageUrl} alt={news.title} className="w-full h-full object-cover" loading="lazy" />
+      {/* Why it matters */}
+      {news.whyItMatters && (
+        <div className="border-l-4 border-[#378ADD] bg-[#1A2A3A] px-6 py-5 mt-4 rounded-r-xl">
+          <p className="text-[#85B7EB] text-[11px] uppercase font-medium mb-2">💡 Why it matters</p>
+          <p className="text-white text-[15px] leading-[1.7]">{news.whyItMatters}</p>
         </div>
       )}
 
-      {/* Why It Matters */}
-      <div className="bg-[#1A2A3A] border-l-4 border-[#378ADD] rounded-r-xl px-6 py-4 mt-8 mb-8">
-        <p className="text-[13px] leading-[1.6]">
-          <span className="text-white font-medium uppercase tracking-[0.05em]">Why it matters — </span>
-          <span className="text-[#8B8FA8]">{news.whyItMatters}</span>
-        </p>
-      </div>
+      {/* Real world impact */}
+      {news.realWorldImpact && (
+        <div className="border-l-4 border-[#C9A84C] bg-[#2A1F0A] px-6 py-5 mt-4 rounded-r-xl">
+          <p className="text-[#EF9F27] text-[11px] uppercase font-medium mb-2">🌍 Real world impact</p>
+          <p className="text-[#EF9F27]/80 text-[15px] leading-[1.7]">{news.realWorldImpact}</p>
+        </div>
+      )}
 
-      {/* Markdown Body */}
-      <div 
-        className="prose prose-invert max-w-none
-          prose-headings:text-white prose-headings:font-semibold
-          prose-p:text-[#8B8FA8] prose-p:leading-[1.7] prose-p:text-[15px]
-          prose-a:text-[#378ADD] prose-a:no-underline hover:prose-a:underline
-          prose-code:bg-[#1A1D35] prose-code:text-[#85B7EB] prose-code:px-1.5 prose-code:rounded
-          prose-blockquote:border-l-[#378ADD] prose-blockquote:text-[#8B8FA8]
-          prose-img:rounded-[12px]"
-        dangerouslySetInnerHTML={{ __html: news.summary }}
-      />
-
-      {/* Blog CTA Card */}
-      {news.blogSlug && (
-        <div className="bg-gradient-to-r from-[#1A2A3A] to-[#13162A] border border-[#2A4A6A] rounded-2xl p-8 mt-12 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div>
-            <h3 className="text-[20px] font-semibold text-white mb-2">Want to learn how?</h3>
-            <p className="text-[#8B8FA8] text-[15px]">We&apos;ve written a detailed step-by-step guide to help you master this.</p>
+      {/* Who is affected */}
+      {news.useCases && typeof news.useCases === 'object' && Object.keys(news.useCases).length > 0 && (
+        <div className="mt-10">
+          <h3 className="text-white text-[20px] font-semibold mb-5">How this affects different people</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {([
+              { key: 'tech',     icon: '👨‍💻', label: 'Developers' },
+              { key: 'business', icon: '💼',   label: 'Business'   },
+              { key: 'student',  icon: '🎓',   label: 'Students'   },
+              { key: 'general',  icon: '🌍',   label: 'Everyone'   },
+            ] as { key: keyof NewsUseCases; icon: string; label: string }[]).map(({ key, icon, label }) => {
+              const val = news.useCases?.[key];
+              if (!val) return null;
+              return (
+                <div key={key} className="card-dark">
+                  <p className="text-[#8B8FA8] text-[11px] uppercase font-medium mb-2">{icon} {label}</p>
+                  <p className="text-white text-[15px] leading-[1.6]">{val}</p>
+                </div>
+              );
+            })}
           </div>
-          <Link href={`/blog/${news.blogSlug}`}>
-            <button className="btn-primary flex items-center gap-2 px-6 shrink-0">
-              Read the full guide <ArrowRight size={16} />
-            </button>
-          </Link>
         </div>
       )}
-    </div>
+
+      {/* Discussion prompt */}
+      {news.discussionPrompt && (
+        <div className="bg-[#13162A] border border-[#2A4A6A] rounded-2xl p-8 mt-12">
+          <p className="text-[#8B8FA8] text-[13px] uppercase font-medium mb-3">💬 Join the discussion</p>
+          <p className="text-[#85B7EB] text-[18px] italic leading-[1.5]">{news.discussionPrompt}</p>
+          <DiscussButton title={news.title} slug={news.slug} />
+        </div>
+      )}
+
+      {/* Blog CTA */}
+      {news.blogSlug && (
+        <div className="bg-gradient-to-r from-[#1A2A3A] to-[#13162A] border border-[#2A4A6A] rounded-2xl p-8 mt-8">
+          <p className="text-[#8B8FA8] text-[13px] mb-2">Want to learn how to use this?</p>
+          <h3 className="text-white text-[22px] font-semibold mb-5">Read the full guide</h3>
+          <a href={`/blog/${news.blogSlug}`}>
+            <button className="btn-primary">Read the full guide →</button>
+          </a>
+        </div>
+      )}
+
+    </main>
   );
 }

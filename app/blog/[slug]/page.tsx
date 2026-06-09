@@ -7,14 +7,17 @@ import { Metadata } from 'next';
 import { NewsItem, Tool } from '@/lib/types';
 import AgentBannerCTA from '@/components/shared/AgentBannerCTA'; // Client component
 import SafeImage from '@/components/shared/SafeImage';
+import CommentSection from '@/components/user/CommentSection';
+import LikeButton from '@/components/user/LikeButton';
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
-    const post = await getBlogPost(params.slug);
+    const { slug } = await params;
+    const post = await getBlogPost(slug);
     return { title: `${post.title} — Vedix Blog`, description: post.excerpt };
   } catch {
     return { title: 'Blog — Vedix' };
@@ -62,7 +65,8 @@ function extractHeadings(htmlContent: string) {
 export default async function BlogDetailPage({ params }: Props) {
   let post;
   try {
-    post = await getBlogPost(params.slug);
+    const { slug } = await params;
+    post = await getBlogPost(slug);
   } catch {
     notFound();
   }
@@ -140,6 +144,12 @@ export default async function BlogDetailPage({ params }: Props) {
               prose-img:rounded-[12px]"
             dangerouslySetInnerHTML={{ __html: processedContent }}
           />
+
+          <div className="mt-8 flex items-center justify-between border-b border-[#2A2D4A] pb-8">
+            <LikeButton blogId={post.id} initialLikes={post.likeCount || 0} initialLiked={false} />
+          </div>
+
+          <CommentSection blogId={post.id} />
 
           {/* Related News at bottom */}
           {relatedNews.length > 0 && (

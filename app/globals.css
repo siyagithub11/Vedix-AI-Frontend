@@ -4,11 +4,9 @@
 @tailwind utilities;
 
 @layer base {
-  html { background-color: #0D0F1A; color: #FFFFFF; }
+  html { background-color: #0D0F1A; color: #FFFFFF; scrollbar-width: thin; scrollbar-color: #2A2D4A #0D0F1A; }
   body { font-family: 'Inter', sans-serif; background: #0D0F1A; }
   ::selection { background: #378ADD40; color: #FFFFFF; }
-  scrollbar-width: thin;
-  scrollbar-color: #2A2D4A #0D0F1A;
 }
 
 @layer base {

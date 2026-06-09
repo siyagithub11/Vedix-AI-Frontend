@@ -1,19 +1,27 @@
-import { NewsCardSkeleton } from '@/components/shared/Skeleton';
+import { Skeleton } from '@/components/shared/Skeleton';
 
 export default function NewsLoading() {
   return (
-    <div className="max-w-[1400px] mx-auto px-6 py-16">
+    <div className="max-w-7xl mx-auto px-6 py-16">
       <div className="mb-12">
-        <div className="h-10 w-48 bg-[#1A1D35] rounded-[8px] animate-pulse mb-3" />
-        <div className="h-5 w-96 bg-[#1A1D35] rounded-[8px] animate-pulse" />
+        <Skeleton className="h-[48px] w-3/4 max-w-md mb-4" />
+        <Skeleton className="h-[20px] w-1/2 max-w-sm" />
       </div>
-      <div className="flex flex-wrap gap-2 mb-8">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-8 w-24 bg-[#1A1D35] rounded-[20px] animate-pulse" />
-        ))}
-      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.from({ length: 6 }).map((_, i) => <NewsCardSkeleton key={i} />)}
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="card-dark h-full flex flex-col p-6">
+            <Skeleton className="h-[176px] w-full rounded-lg mb-4" />
+            <Skeleton className="h-[16px] w-1/3 mb-4" />
+            <Skeleton className="h-[24px] w-full mb-2" />
+            <Skeleton className="h-[24px] w-4/5 mb-4" />
+            <Skeleton className="h-[60px] w-full mb-6" />
+            <div className="mt-auto border-t border-[#2A2D4A] pt-4 flex justify-between">
+              <Skeleton className="h-[16px] w-1/4" />
+              <Skeleton className="h-[32px] w-1/3 rounded-full" />
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

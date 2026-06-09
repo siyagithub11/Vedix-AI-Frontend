@@ -1,3 +1,10 @@
+export interface NewsUseCases {
+  tech?: string;
+  business?: string;
+  student?: string;
+  general?: string;
+}
+
 export interface NewsItem {
   id: string;
   slug: string;
@@ -13,6 +20,11 @@ export interface NewsItem {
   isPublished: boolean;
   blogId?: string;
   blogSlug?: string;
+  viewCount?: number;
+  realWorldImpact?: string | null;
+  useCases?: NewsUseCases | null;
+  discussionPrompt?: string | null;
+  relatedToolNames?: string[];
 }
 
 export interface BlogPost {
@@ -28,6 +40,7 @@ export interface BlogPost {
   isPublished: boolean;
   toolIds: string[];
   newsIds: string[];
+  likeCount?: number;
 }
 
 export interface Tool {
